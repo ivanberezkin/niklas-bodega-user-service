@@ -42,8 +42,12 @@ public class SecurityConfig {
                             "/api/auth/**",
                             "/api/auth/login**",
                             "/oauth2/**",
-                            "/api/user/register"
+                            "/api/user/register",
+                            "/actuator/health",
+                            "/actuator/metrics",
+                            "/actuator/metrics/*"
                     ).permitAll();
+                    //todo add / remove endpoints to be allowed for actuator
 
                     auth.anyRequest().authenticated();
                 })
