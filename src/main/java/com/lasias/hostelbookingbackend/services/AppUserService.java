@@ -67,7 +67,7 @@ public class AppUserService {
     // login user without OAuth2 providers
     public ResponseCookie loginUser(AuthRequestDTO request) {
         if (request == null) {
-            log.error("Local login request is null whe loginUser is called");
+            log.error("Local login request is null when loginUser is called");
             throw new IllegalArgumentException("Request is null");
         }
         String email = request.email();
@@ -76,9 +76,12 @@ public class AppUserService {
             log.info("Login failed, email and password are required");
             throw new IllegalArgumentException("Email and password are required");
         }
-        AppUser user = appUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        AppUser user = appUserRepository.findByEmail(email).orElseThrow(() -> {
+            log.warn("Login failed: no account found for provided email");
+            return new UsernameNotFoundException("User not found.");
+        });
         if (validPassword(password, user.getPassword())) {
-            log.info("User logged in: {}", user.getEmail());
+            log.info("User logged in: {}", user.getId());
             return jwtService.createJwtCookie(user.getId(), false);
         }
         log.error("Login failed, invalid credentials");
