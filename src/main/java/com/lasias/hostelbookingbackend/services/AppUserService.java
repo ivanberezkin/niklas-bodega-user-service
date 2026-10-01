@@ -49,7 +49,7 @@ public class AppUserService {
     // register user through user information from the frontend.
     public ResponseCookie register(RegisterNewUserDTO newUser) {
         if (appUserRepository.findByEmail(newUser.email()).isPresent()) {
-            log.info("Registration failed, email already in use:");
+            log.warn("Registration through standard login failed, email already in use.");
             throw new IllegalArgumentException("Email already in use");
         }
         AppUser user = new AppUser();
@@ -57,8 +57,8 @@ public class AppUserService {
         user.setEmail(newUser.email());
         user.setPassword(hashPassword(newUser.password()));
         user.setRole("USER");
-        appUserRepository.save(user);
-        log.info("New user registered: {}", user.getEmail());
+        AppUser savedUser = appUserRepository.save(user);
+        log.info("New user registered: {}", savedUser.getId());
         Long userId = appUserRepository.findByEmail(newUser.email()).get().getId();
         return jwtService.createJwtCookie(userId, false);
     }
