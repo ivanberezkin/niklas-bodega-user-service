@@ -33,7 +33,7 @@ public class AppUserService {
     // register user through OAuth2 providers
     public void register(String name, String email, String authProviderId, AuthProvider authProvider) {
         if (appUserRepository.findByEmail(email).isPresent()) {
-            log.error("Registration failed, email already in use:");
+            log.warn("OAuth registration failed: email already in use (provider: {})", authProvider);
             throw new IllegalArgumentException("Email already in use");
         }
         AppUser user = new AppUser();
@@ -42,14 +42,14 @@ public class AppUserService {
         user.setAuthProvider(authProvider);
         user.setAuthProviderId(authProviderId);
         user.setRole("USER");
-        log.info("New user registered: {}", user.getEmail());
-        appUserRepository.save(user);
+        AppUser savedUser = appUserRepository.save(user);
+        log.info("New user registered: {}", savedUser.getId());
     }
 
     // register user through user information from the frontend.
     public ResponseCookie register(RegisterNewUserDTO newUser) {
         if (appUserRepository.findByEmail(newUser.email()).isPresent()) {
-            log.error("Registration failed, email already in use:");
+            log.info("Registration failed, email already in use:");
             throw new IllegalArgumentException("Email already in use");
         }
         AppUser user = new AppUser();
@@ -73,7 +73,7 @@ public class AppUserService {
         String email = request.email();
         String password = request.password();
         if (email == null || password == null) {
-            log.error("Login failed, email and password are required");
+            log.info("Login failed, email and password are required");
             throw new IllegalArgumentException("Email and password are required");
         }
         AppUser user = appUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found."));
@@ -171,7 +171,6 @@ public class AppUserService {
 
     public UserInformationDTO provideUserDetails(Long userId) {
         AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        log.info("User details retrieved: {}", user.getEmail());
         return new UserInformationDTO(user.getEmail(), user.getName(), user.getRole(), user.getCreatedAt(), (user.getPassword() != null));
     }
 
