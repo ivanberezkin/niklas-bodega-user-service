@@ -46,7 +46,6 @@ public class SecurityConfig {
                             "/actuator/health",
                             "/actuator/prometheus"
                     ).permitAll();
-                    //todo add / remove endpoints to be allowed for actuator
 
                     auth.anyRequest().authenticated();
                 })
