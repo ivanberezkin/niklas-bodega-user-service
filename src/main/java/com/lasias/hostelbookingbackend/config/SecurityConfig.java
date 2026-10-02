@@ -44,8 +44,7 @@ public class SecurityConfig {
                             "/oauth2/**",
                             "/api/user/register",
                             "/actuator/health",
-                            "/actuator/metrics",
-                            "/actuator/metrics/*"
+                            "/actuator/prometheus"
                     ).permitAll();
                     //todo add / remove endpoints to be allowed for actuator
 
