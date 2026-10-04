@@ -34,7 +34,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/user-service:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/user-service:${{ github.run_number }}
 
       # 5. Redeploy on Railway
       - name: Redeploy on Railway
