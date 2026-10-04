@@ -40,4 +40,4 @@ jobs:
       - name: Redeploy on Railway
         run: npx -y @railway/cli@latest redeploy --service user-service --yes
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_USER_SERVICE }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
