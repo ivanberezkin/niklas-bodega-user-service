@@ -36,11 +36,11 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/user-service:${{ github.run_number }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/niklas-bodega-user-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/niklas-bodega-user-service:${{ github.run_number }}
 
       # 5. Redeploy on Railway
       - name: Redeploy on Railway
-        run: npx -y @railway/cli@latest redeploy --service user-service --yes
+        run: npx -y @railway/cli@latest redeploy --service niklas-bodega-user-service --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
