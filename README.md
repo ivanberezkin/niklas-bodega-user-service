@@ -17,4 +17,12 @@ Varje ny deployment skapar en image med två taggar: en unik tagg (`image` + git
 
 Om vi behöver göra en rollback går vi in i Railway, väljer produktionsmiljön och byter till en äldre version av Docker-imagen.
 
-CI checks must pass test....
+
+
+## MergiKonflikten
+Vi triggade en merge konflikt genom att skriva svaren ovan på samma feature-branch och pushade upp efter varandra. Den första personen kunde pusha, men den andra personen var tvungen att pulla först och då triggades en mergekonflikt.
+Lösningen var att vi pratade ihop oss och valde det alternativet som passade oss bättre.
+
+## Länk Till Railway
+https://railway.com/project/df08f7c5-35c6-4c9e-a29b-9b0cc3ad887c
+Det finns två environments (Staging och Production)
