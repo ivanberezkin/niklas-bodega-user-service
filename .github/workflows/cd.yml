@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - pre-prod
-      - main
 
 permissions:
   contents: read
