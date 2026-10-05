@@ -1,87 +1,16 @@
-# user-service
+Branching-strategi och CI/CD-flöde
+Vi har valt GitHub Flow som vår branching-strategi. Eftersom vi tidigare har arbetat med Trunk-based development kändes det naturligt att testa ett nytt tillvägagångssätt.
 
-Spring Boot-mikroservicen för **användare och autentisering** i Niklas Bodega. Det här är den enda tjänsten som skapar JWT och hanterar inloggning.
+Arbetsflöde och miljöer
+Vi använder en pre-prod-branch för att samla och testa kod i vår staging-miljö på Railway innan den når produktion:
 
-**Port:** 8084  
-**Databas:** egen MySQL (`users`)  
-**Stack:** Java 21, Spring Boot, Spring Security, JPA, JWT, OAuth2 (Google + GitHub)
+Feature branches: All ny funktionalitet utvecklas i separata feature-branches.
 
-## Vad den här tjänsten gör
+Staging (Railway): När en ändring är klar skapas en Pull Request (PR) mot pre-prod. Vid godkänd och genomförd merge byggs en ny Docker-image som automatiskt deployas till vår staging-miljö.
 
-- Registrera konto (`POST /api/user/register`)
-- Logga in med e-post/lösenord (`POST /api/auth/login`) — sätter httpOnly-cookien `jwt`
-- Logga ut, även från alla enheter
-- Hämta, uppdatera och radera den inloggade användaren (`/api/user`)
-- OAuth2-inloggning via Google och GitHub (`/oauth2/**`)
+Produktion (Railway): När ändringarna har verifierats i staging mergas pre-prod in i main, vilket utlöser en deployment till vår produktionsmiljö på Railway.
 
-User-service **äger inte** bokningar eller recensioner. Den frågar booking-service innan ett konto raderas, så att användare med aktiva bokningar inte tas bort.
+Hantering av rollbacks
+Om vi behöver göra en rollback har vi tillgång til alla tidigare byggda versioner via Docker Hub. Vi återställer enkelt systemet genom att peka om Railway till en tidigare önskad image-tagg.
 
-## Vad de andra tjänsterna gör
-
-| Tjänst | Ansvar |
-|--------|--------|
-| **booking-service** (8083) | Rum, rumstyper, tillgänglighet och bokningar |
-| **review-service** (8086) | Recensioner och betyg per rumstyp |
-| **frontend** (8087) | React-gränssnittet som anropar API:erna |
-
-## Hur tjänsterna pratar med varandra
-
-```
-Frontend ──► user-service     inloggning, profil, JWT-cookie
-Frontend ──► booking-service  rum och bokningar
-Frontend ──► review-service   recensioner
-
-user-service ──GET /api/bookings/active──► booking-service
-  Vid DELETE /api/user: radering avbryts om användaren har aktiva bokningar.
-
-booking-service ──GET /api/user──► user-service
-  Innan en bokning skapas: kontrollera att användaren fortfarande finns.
-
-review-service ──GET /api/user──► user-service
-  När en recension skapas: hämta visningsnamn att spara på recensionen.
-```
-
-Alla backends delar samma `JWT_SECRET`. Booking och review validerar cookien själva; de anropar inte user-service för varje request.
-
-Intern URL mot den här tjänsten i Docker: `http://user-service:8084`.
-
-## Starta hela systemet
-
-Tjänsten körs tillsammans med resten via Docker Compose i infra-repot. Clone alla repos som syskonmappar:
-
-```
-niklas-bodega/
-├── niklas-bodega-infra/
-├── user/                 ← du är här
-├── booking/
-├── review-service/
-└── frontend/
-```
-
-```bash
-docker network create proxy-network   # om nätverket inte redan finns
-cd ../niklas-bodega-infra
-cp .env.example .env                  # fyll i JWT, DB och interna URL:er
-docker compose up --build
-```
-
-I `.env` ska user-service nås som:
-
-```env
-USER_INTERNAL_ADDRESS=http://user-service:8084
-BOOKING_INTERNAL_ADDRESS=http://booking-service:8083
-```
-
-Öppna sedan http://localhost:8087 (frontend). User API ligger på http://localhost:8084.
-
-Se [niklas-bodega-infra/README.md](../niklas-bodega-infra/README.md) för miljövariabler och portar.
-
-## Köra bara den här tjänsten (IDE)
-
-Kräver en MySQL-instans (t.ex. `db-user` från Compose, mappad till `localhost:3308`). I `application.properties` pekar default mot `localhost:3306`.
-
-```bash
-mvn spring-boot:run
-```
-
-OAuth-klient-id:n kan lämnas tomma om du bara testar e-post/lösenord.
+(Detta är vårt försök till en merge-konflikt – bäst README vinner!)
