@@ -16,3 +16,5 @@ Flödet ser ut så här:
 Varje ny deployment skapar en image med två taggar: en unik tagg (`image` + git-nummer) och `latest`. På så sätt har vi alltid kvar äldre versioner av våra releaser.
 
 Om vi behöver göra en rollback går vi in i Railway, väljer produktionsmiljön och byter till en äldre version av Docker-imagen.
+
+CI checks must pass test....
