@@ -33,7 +33,7 @@ public class AppUserService {
     // register user through OAuth2 providers
     public void register(String name, String email, String authProviderId, AuthProvider authProvider) {
         if (appUserRepository.findByEmail(email).isPresent()) {
-            log.error("Registration failed, email already in use:");
+            log.warn("OAuth registration failed: email already in use (provider: {})", authProvider);
             throw new IllegalArgumentException("Email already in use");
         }
         AppUser user = new AppUser();
@@ -42,14 +42,14 @@ public class AppUserService {
         user.setAuthProvider(authProvider);
         user.setAuthProviderId(authProviderId);
         user.setRole("USER");
-        log.info("New user registered: {}", user.getEmail());
-        appUserRepository.save(user);
+        AppUser savedUser = appUserRepository.save(user);
+        log.info("New user registered: {}", savedUser.getId());
     }
 
     // register user through user information from the frontend.
     public ResponseCookie register(RegisterNewUserDTO newUser) {
         if (appUserRepository.findByEmail(newUser.email()).isPresent()) {
-            log.error("Registration failed, email already in use:");
+            log.warn("Registration through standard login failed, email already in use.");
             throw new IllegalArgumentException("Email already in use");
         }
         AppUser user = new AppUser();
@@ -57,8 +57,8 @@ public class AppUserService {
         user.setEmail(newUser.email());
         user.setPassword(hashPassword(newUser.password()));
         user.setRole("USER");
-        appUserRepository.save(user);
-        log.info("New user registered: {}", user.getEmail());
+        AppUser savedUser = appUserRepository.save(user);
+        log.info("New user registered: {}", savedUser.getId());
         Long userId = appUserRepository.findByEmail(newUser.email()).get().getId();
         return jwtService.createJwtCookie(userId, false);
     }
@@ -67,18 +67,21 @@ public class AppUserService {
     // login user without OAuth2 providers
     public ResponseCookie loginUser(AuthRequestDTO request) {
         if (request == null) {
-            log.error("Local login request is null whe loginUser is called");
+            log.error("Local login request is null when loginUser is called");
             throw new IllegalArgumentException("Request is null");
         }
         String email = request.email();
         String password = request.password();
         if (email == null || password == null) {
-            log.error("Login failed, email and password are required");
+            log.info("Login failed, email and password are required");
             throw new IllegalArgumentException("Email and password are required");
         }
-        AppUser user = appUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        AppUser user = appUserRepository.findByEmail(email).orElseThrow(() -> {
+            log.warn("Login failed: no account found for provided email");
+            return new UsernameNotFoundException("User not found.");
+        });
         if (validPassword(password, user.getPassword())) {
-            log.info("User logged in: {}", user.getEmail());
+            log.info("User logged in: {}", user.getId());
             return jwtService.createJwtCookie(user.getId(), false);
         }
         log.error("Login failed, invalid credentials");
@@ -171,7 +174,6 @@ public class AppUserService {
 
     public UserInformationDTO provideUserDetails(Long userId) {
         AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        log.info("User details retrieved: {}", user.getEmail());
         return new UserInformationDTO(user.getEmail(), user.getName(), user.getRole(), user.getCreatedAt(), (user.getPassword() != null));
     }
 
