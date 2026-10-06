@@ -24,7 +24,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
-          if [[ ! "$IMAGE_TAG" =~ ^sha-[0-9a-f]{40}$ ]]; then
+          if [[ ! "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]; then
             echo "Invalid tag: must look like sha-<40 hex characters>"
             exit 1
           fi
