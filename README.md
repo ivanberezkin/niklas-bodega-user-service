@@ -26,3 +26,5 @@ Lösningen var att vi pratade ihop oss och valde det alternativet som passade os
 ## Länk Till Railway
 https://railway.com/project/df08f7c5-35c6-4c9e-a29b-9b0cc3ad887c
 Det finns två environments (Staging och Production)
+
+lägger till för demo.
